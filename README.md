@@ -1,172 +1,266 @@
-# Awesome Python Template
+# PrivateBin MCP Server
 
-A modern Python project template with best practices and cutting-edge tooling.
+A Model Context Protocol (MCP) server for secure encrypted sharing via [PrivateBin](https://privatebin.info/). This server enables AI assistants to create and retrieve encrypted shares while maintaining strong security boundaries.
 
-## 🚀 Features
+## 🔒 Security Features
 
-- **📦 uv** for fast, reliable package management
-- **🏗️ Source layout** with `src/{library-name}` structure
-- **🧪 pytest** for comprehensive testing
-- **🎨 ruff** for lightning-fast linting and formatting
-- **🔍 deptry** for dependency analysis and unused dependency detection
-- **⚡ PoeThePoet** for task automation
-- **🤖 GitHub Actions** with PR welcome messages and slash command support
-- **📋 Dedicated config files** instead of cramming everything into pyproject.toml
+- **Server URL Control**: The PrivateBin server URL is configured via environment variable and cannot be overridden by the AI agent (prevents data exfiltration)
+- **Hidden Passcodes**: Default passcode is stored in environment variable, not visible to the LLM
+- **File-based Decryption**: Decrypted content is written to files, not returned to the agent (keeps sensitive data hidden from LLMs)
+- **End-to-end Encryption**: All content is encrypted locally before being sent to the server
 
-## 🛠️ Quick Start
+## Installation
 
-1. **Clone and setup:**
-   ```bash
-   git clone <your-repo>
-   cd <your-repo>
-   uv sync --extra dev
-   ```
+### Using uvx (recommended)
 
-2. **Run tasks with poe:**
-   ```bash
-   # List all available tasks
-   uv run poe
-
-   # Run tests
-   uv run poe test
-
-   # Format and lint code
-   uv run poe format
-   uv run poe lint
-
-   # Run all checks
-   uv run poe check
-   ```
-
-## 📋 Available Tasks
-
-### Core Development
-- `poe test` - Run all tests
-- `poe test-fast` - Run tests with fast exit on first failure  
-- `poe test-cov` - Run tests with coverage reporting
-- `poe lint` - Check code style and quality
-- `poe format` - Format code with ruff
-- `poe format-check` - Check if code is properly formatted
-- `poe deps` - Check for unused and missing dependencies
-
-### Convenience Tasks  
-- `poe check` - Run format check, linting, dependency check, and tests
-- `poe fix` - Auto-format and fix linting issues
-- `poe pre-commit` - Run pre-commit style checks
-
-### Build & Install
-- `poe install` - Install with development dependencies
-- `poe install-prod` - Install production dependencies only
-- `poe build` - Build the package
-
-### Utilities
-- `poe clean` - Clean up build artifacts and cache
-- `poe version` - Show package version
-- `poe docs` - Generate documentation (placeholder)
-- `poe typecheck` - Run type checking (placeholder)
-- `poe security` - Run security checks (placeholder)
-
-## 🤖 GitHub Integration
-
-### PR Welcome Messages
-When you open a pull request, you'll automatically get a welcome message with helpful commands.
-
-### Slash Commands
-Use `/poe <task-name>` in PR comments to run tasks:
-
-- `/poe test` - Run tests
-- `/poe lint` - Check code quality
-- `/poe format` - Format code
-- `/poe check` - Run all checks
-
-**Note**: For security reasons, slash commands run against the base repository code, not the PR changes. This ensures that untrusted code cannot be executed in a privileged environment.
-
-## 📁 Project Structure
-
-```
-awesome-python-template/
-├── src/
-│   └── awesome_python_template/    # Main source code
-│       ├── __init__.py
-│       └── py.typed
-├── tests/                          # Test files
-│   ├── __init__.py
-│   └── test_awesome_python_template.py
-├── .github/
-│   └── workflows/                  # GitHub Actions
-│       ├── pr-welcome.yml
-│       └── slash-command-dispatch.yml
-├── pyproject.toml                  # Project metadata and minimal config
-├── ruff.toml                       # Ruff configuration
-├── pytest.ini                     # Pytest configuration
-├── poe_tasks.toml                  # PoeThePoet task definitions (reference)
-├── uv.lock                         # Dependency lock file
-└── README.md                       # This file
-```
-
-## 🔧 Configuration Files
-
-This template uses **dedicated configuration files** for each tool:
-
-- **`ruff.toml`** - Ruff linting and formatting configuration
-- **`pytest.ini`** - Pytest testing configuration  
-- **`pyproject.toml`** - Minimal project metadata and poe tasks
-- **`poe_tasks.toml`** - Reference copy of task definitions
-
-## 🧪 Testing
-
-Tests are organized with pytest markers:
-- `@pytest.mark.unit` - Unit tests
-- `@pytest.mark.integration` - Integration tests
-
-Run specific test types:
 ```bash
-uv run poe test-unit        # Unit tests only
-uv run poe test-integration # Integration tests only
+uvx privatebin-mcp
 ```
 
-## 📦 Dependencies
+### Using pip
 
-Development dependencies are defined in `pyproject.toml`:
-- **pytest** - Testing framework
-- **pytest-cov** - Coverage reporting
-- **ruff** - Linting and formatting
-- **deptry** - Dependency analysis
-- **poethepoet** - Task runner
-
-### Dependency Analysis
-
-This template includes `deptry` for detecting unused and missing dependencies. To ignore false positives, search for "deptry" in the repository and update the configuration in `pyproject.toml`:
-
-```toml
-[tool.deptry]
-# To ignore specific error codes globally:
-ignore = ["DEP004"]  # Example: ignore misplaced dev dependencies
-
-# To ignore specific packages, use CLI options in poe tasks:
-# poe deps --per-rule-ignores DEP002=package-name
+```bash
+pip install privatebin-mcp
 ```
 
-## 🎯 Best Practices
+### From source
 
-This template follows modern Python best practices:
+```bash
+git clone https://github.com/aaronsteers/privatebin-mcp.git
+cd privatebin-mcp
+uv sync
+```
 
-1. **Source layout** - Code in `src/` directory
-2. **Dependency management** - uv for fast, reliable installs
-3. **Code quality** - Ruff for consistent formatting and linting
-4. **Testing** - Comprehensive pytest setup with coverage
-5. **Task automation** - PoeThePoet for development workflows
-6. **CI/CD** - GitHub Actions with PR automation
-7. **Configuration** - Dedicated files for each tool
+## Configuration
 
-## 🔄 Development Workflow
+### Required Environment Variables
 
-1. Make your changes
-2. Run `uv run poe fix` to auto-format and fix linting
-3. Run `uv run poe test` to ensure tests pass
-4. Push your changes
-5. Use `/poe <task>` commands in PR comments as needed
+Create a `.env` file or set these environment variables:
 
-## 📄 License
+```bash
+# Required: PrivateBin server URL
+PRIVATEBIN_SERVER_URL=https://privatebin.net
+
+# Optional: Default passcode for additional security
+PRIVATEBIN_DEFAULT_PASSCODE=your-secret-passcode
+```
+
+### MCP Client Configuration
+
+Add this server to your MCP client configuration (e.g., Claude Desktop, Devin):
+
+```json
+{
+  "mcpServers": {
+    "privatebin": {
+      "command": "uvx",
+      "args": ["privatebin-mcp"],
+      "env": {
+        "PRIVATEBIN_SERVER_URL": "https://privatebin.net",
+        "PRIVATEBIN_DEFAULT_PASSCODE": "optional-default-passcode"
+      }
+    }
+  }
+}
+```
+
+Or if installed from source:
+
+```json
+{
+  "mcpServers": {
+    "privatebin": {
+      "command": "uv",
+      "args": ["run", "privatebin-mcp"],
+      "cwd": "/path/to/privatebin-mcp",
+      "env": {
+        "PRIVATEBIN_SERVER_URL": "https://privatebin.net",
+        "PRIVATEBIN_DEFAULT_PASSCODE": "optional-default-passcode"
+      }
+    }
+  }
+}
+```
+
+## Available Tools
+
+### 1. `create_encrypted_share_from_string`
+
+Create and post an encrypted paste from string content.
+
+**Parameters:**
+- `content` (string, required): Text content to encrypt and share
+- `format` (string, optional): Format type - `plaintext`, `syntaxhighlighting`, or `markdown` (default: `plaintext`)
+- `expiration` (string, optional): Expiration time - `5min`, `10min`, `1hour`, `1day`, `1week`, `1month`, `1year`, or `never` (default: `1week`)
+- `burn_after_reading` (boolean, optional): Delete after first view (default: `false`)
+- `enable_discussion` (boolean, optional): Enable comments (default: `false`)
+- `passcode` (string, optional): Additional passcode protection (falls back to `PRIVATEBIN_DEFAULT_PASSCODE`)
+
+**Returns:** Full PrivateBin URL with encryption key
+
+**Example:**
+```python
+# AI assistant creates an encrypted share
+url = create_encrypted_share_from_string(
+    content="Secret information here",
+    format="markdown",
+    expiration="1day",
+    burn_after_reading=True,
+    passcode="optional-extra-security"
+)
+# Returns: https://privatebin.net/?abc123#encryptionkey
+```
+
+### 2. `create_encrypted_share_from_file`
+
+Create and post an encrypted paste from file contents.
+
+**Parameters:**
+- `file_path` (string, required): Path to file to encrypt and share
+- Same optional parameters as `create_encrypted_share_from_string`
+
+**Returns:** Full PrivateBin URL with encryption key
+
+**Example:**
+```python
+# AI assistant shares a file
+url = create_encrypted_share_from_file(
+    file_path="/path/to/document.txt",
+    format="plaintext",
+    expiration="1week"
+)
+```
+
+### 3. `save_decrypted_share_to_file`
+
+Retrieve and decrypt a PrivateBin share, saving it to a file.
+
+**Parameters:**
+- `url` (string, required): Full PrivateBin URL (with fragment)
+- `output_path` (string, required): Path where to save decrypted content
+- `passcode` (string, optional): Passcode if the share is protected (falls back to `PRIVATEBIN_DEFAULT_PASSCODE`)
+
+**Returns:** Success message with file path (does NOT include decrypted content)
+
+**Example:**
+```python
+# AI assistant retrieves and saves a share
+result = save_decrypted_share_to_file(
+    url="https://privatebin.net/?abc123#encryptionkey",
+    output_path="/path/to/output.txt",
+    passcode="optional-passcode"
+)
+# Returns: "Successfully saved decrypted content to: /path/to/output.txt (1234 characters)"
+# Note: The actual content is NOT returned to the AI - only written to the file
+```
+
+## Use Cases
+
+### 1. Secure Information Sharing
+
+AI assistants can create encrypted shares of sensitive information without the data being visible in the conversation:
+
+```
+User: "Share this API key securely: sk-abc123..."
+AI: Creates encrypted share with burn_after_reading=True
+    Returns URL to user
+    API key never appears in conversation history
+```
+
+### 2. Temporary Code Snippets
+
+Share code snippets with automatic expiration:
+
+```
+AI: Creates share with format="syntaxhighlighting", expiration="1hour"
+    Perfect for temporary code reviews or debugging sessions
+```
+
+### 3. Secure File Transfer
+
+Transfer files between systems securely:
+
+```
+AI: Reads file, creates encrypted share, provides URL
+User: Downloads from another system
+AI: Can retrieve and save to different location if needed
+```
+
+## Security Model
+
+### What the AI Can Do
+- ✅ Create encrypted shares from strings or files
+- ✅ Retrieve and save shares to files
+- ✅ Specify format, expiration, and other paste options
+
+### What the AI Cannot Do
+- ❌ Choose the PrivateBin server (configured via env var)
+- ❌ See the default passcode (configured via env var)
+- ❌ See decrypted content when retrieving shares (written to file only)
+
+This security model ensures that:
+1. **No data exfiltration**: AI cannot send data to arbitrary servers
+2. **Hidden credentials**: Passcodes remain invisible to the LLM
+3. **Controlled access**: Decrypted content goes to files, not conversation history
+
+## Development
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/aaronsteers/privatebin-mcp.git
+cd privatebin-mcp
+
+# Install dependencies
+uv sync
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+### Running Locally
+
+```bash
+# Run the MCP server
+uv run privatebin-mcp
+
+# Or with custom environment
+PRIVATEBIN_SERVER_URL=https://privatebin.net uv run privatebin-mcp
+```
+
+### Testing
+
+```bash
+# Run tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=privatebin_mcp
+```
+
+## How It Works
+
+1. **Local Encryption**: Content is encrypted locally using AES-256-GCM before being sent
+2. **Server Storage**: Only encrypted data is stored on the PrivateBin server
+3. **Key in URL**: The encryption key is included in the URL fragment (after `#`), which is never sent to the server
+4. **Secure Sharing**: Share the complete URL with recipients who can decrypt the content in their browser or via this MCP server
+
+## Related Projects
+
+- [PrivateBin](https://github.com/PrivateBin/PrivateBin) - The server software
+- [privatebin Python library](https://github.com/Ravencentric/privatebin) - Python client library (used by this MCP server)
+- [privatebin-cli](https://github.com/aaronsteers/privatebin-cli) - Command-line tool for PrivateBin
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Author
+
+**Aaron Steers** - [GitHub](https://github.com/aaronsteers)
+
+## Support
+
+If you encounter any issues or have questions, please [open an issue](https://github.com/aaronsteers/privatebin-mcp/issues) on GitHub.
