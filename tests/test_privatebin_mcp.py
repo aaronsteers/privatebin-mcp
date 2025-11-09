@@ -17,7 +17,9 @@ class TestPrivateBinMCP:
     @pytest.mark.unit
     def test_get_server_url_success(self):
         """Test getting server URL from environment."""
-        with patch.dict(os.environ, {"PRIVATEBIN_SERVER_URL": "https://test.example.com"}):
+        with patch.dict(
+            os.environ, {"PRIVATEBIN_SERVER_URL": "https://test.example.com"}
+        ):
             result = _get_server_url()
             assert result == "https://test.example.com"
 
@@ -25,7 +27,10 @@ class TestPrivateBinMCP:
     def test_get_server_url_missing(self):
         """Test error when server URL is missing."""
         with patch.dict(os.environ, {}, clear=True):  # noqa: SIM117
-            with pytest.raises(RuntimeError, match="PRIVATEBIN_SERVER_URL environment variable is required"):
+            with pytest.raises(
+                RuntimeError,
+                match="PRIVATEBIN_SERVER_URL environment variable is required",
+            ):
                 _get_server_url()
 
     @pytest.mark.unit
