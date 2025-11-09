@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "privatebin": {
+      "command": "uvx",
+      "args": ["privatebin-mcp"],
+      "env": {
+        "PRIVATEBIN_SERVER_URL": "https://privatebin.net",
+        "PRIVATEBIN_DEFAULT_PASSCODE": ""
+      }
+    }
+  }
+}

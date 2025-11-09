@@ -1,6 +1,6 @@
 🎉 **Thanks for opening this pull request!**
 
-Your contribution is appreciated. Here are some helpful commands you can use:
+Your contribution is appreciated. For detailed development setup and commands, see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Available Poe Tasks
 You can run any of these tasks using the slash command: `/poe <task-name>`

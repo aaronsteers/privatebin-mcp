@@ -1,15 +1,20 @@
 [project]
-name = "awesome-python-template"
+name = "privatebin-mcp"
 version = "0.1.0"
-description = "A modern Python project template with best practices and tooling"
+description = "MCP server for secure encrypted sharing via PrivateBin"
 readme = "README.md"
 authors = [
-    { name = "Aaron Steers", email = "aaron@aaronsteers.com" }
+    { name = "Aaron Steers", email = "aaronsteers@gmail.com" }
 ]
 requires-python = ">=3.10"
-dependencies = []
-license = { file = "LICENSE" }
-keywords = ["template", "scaffold", "python", "modern"]
+dependencies = [
+    "fastmcp>=2.12.1",
+    "privatebin>=0.3.0",
+    "pydantic",
+    "python-dotenv>=1.0.0",
+]
+license = { text = "MIT" }
+keywords = ["mcp", "privatebin", "encryption", "sharing"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -18,21 +23,28 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
 ]
+
+[project.urls]
+Homepage = "https://github.com/aaronsteers/privatebin-mcp"
+Repository = "https://github.com/aaronsteers/privatebin-mcp"
+
+[project.scripts]
+privatebin-mcp = "privatebin_mcp.server:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0",
+    "pytest>=7.4.0",
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
+    "basedpyright>=1.10.0",
     "poethepoet>=0.24.0",
     "deptry>=0.12.0",
 ]
 
 [build-system]
-requires = ["uv_build>=0.9.5,<0.10.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 # Deptry configuration for dependency analysis
 # https://deptry.com/
@@ -63,7 +75,7 @@ ignore_notebooks = false
 
 # Known first-party modules (your own packages)
 known_first_party = [
-    "awesome_python_template",
+    "privatebin_mcp",
 ]
 
 # To ignore specific error codes globally, uncomment and modify:
