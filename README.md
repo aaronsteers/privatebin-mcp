@@ -205,40 +205,7 @@ This security model ensures that:
 
 ## Development
 
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/aaronsteers/privatebin-mcp.git
-cd privatebin-mcp
-
-# Install dependencies
-uv sync
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-### Running Locally
-
-```bash
-# Run the MCP server
-uv run privatebin-mcp
-
-# Or with custom environment
-PRIVATEBIN_SERVER_URL=https://privatebin.net uv run privatebin-mcp
-```
-
-### Testing
-
-```bash
-# Run tests
-uv run pytest
-
-# Run with coverage
-uv run pytest --cov=privatebin_mcp
-```
+For development setup, testing, and contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## How It Works
 

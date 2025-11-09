@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "MCP server for secure encrypted sharing via PrivateBin"
 readme = "README.md"
 authors = [
-    { name = "Aaron Steers", email = "aj@airbyte.io" }
+    { name = "Aaron Steers", email = "aaronsteers@gmail.com" }
 ]
 requires-python = ">=3.10"
 dependencies = [
@@ -38,6 +38,7 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
     "basedpyright>=1.10.0",
+    "poethepoet>=0.24.0",
     "deptry>=0.12.0",
 ]
 
