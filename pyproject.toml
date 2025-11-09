@@ -10,6 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "fastmcp>=2.12.1",
     "privatebin>=0.3.0",
+    "pydantic",
     "python-dotenv>=1.0.0",
 ]
 license = { text = "MIT" }
@@ -78,10 +79,6 @@ known_first_party = [
 
 # To ignore specific error codes globally, uncomment and modify:
 ignore = ["DEP004"]  # Ignore misplaced dev dependencies (common for test frameworks like pytest)
-
-# Ignore specific packages for specific rules
-# pydantic is a transitive dependency from fastmcp but we use it for type annotations
-per_rule_ignores = { DEP003 = ["pydantic"] }
 
 # To ignore specific packages for specific rules, use CLI options:
 # Examples:
