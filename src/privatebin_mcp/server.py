@@ -14,8 +14,8 @@ from typing import Annotated
 
 from dotenv import load_dotenv
 from fastmcp import FastMCP
+from privatebin import Expiration, Formatter, create, get
 from pydantic import Field
-from privatebin import create, get, Expiration, Formatter
 
 load_dotenv()
 
@@ -28,14 +28,77 @@ logger = logging.getLogger(__name__)
 
 app = FastMCP("PrivateBin MCP Server")
 
-PRIVATEBIN_SERVER_URL = os.getenv("PRIVATEBIN_SERVER_URL")
-PRIVATEBIN_DEFAULT_PASSCODE = os.getenv("PRIVATEBIN_DEFAULT_PASSCODE", "")
 
-if not PRIVATEBIN_SERVER_URL:
-    logger.error("PRIVATEBIN_SERVER_URL environment variable is required")
-    sys.exit(1)
+def _get_server_url() -> str:
+    """Get and validate the PrivateBin server URL from environment."""
+    server_url = os.getenv("PRIVATEBIN_SERVER_URL")
+    if not server_url:
+        raise RuntimeError(
+            "PRIVATEBIN_SERVER_URL environment variable is required. "
+            "Please set it to your PrivateBin server URL (e.g., https://privatebin.net)"
+        )
+    return server_url
 
-logger.info(f"PrivateBin MCP Server configured with server: {PRIVATEBIN_SERVER_URL}")
+
+def _get_default_passcode() -> str:
+    """Get the default passcode from environment (may be empty)."""
+    return os.getenv("PRIVATEBIN_DEFAULT_PASSCODE", "")
+
+
+def _create_paste_internal(
+    content: str,
+    format: str = "plaintext",
+    expiration: str = "1week",
+    burn_after_reading: bool = False,
+    enable_discussion: bool = False,
+    passcode: str | None = None,
+) -> str:
+    """Internal helper to create an encrypted paste.
+
+    Args:
+        content: Text content to encrypt and share
+        format: Format type (plaintext, syntaxhighlighting, markdown)
+        expiration: When the paste expires (5min to never)
+        burn_after_reading: Delete after first view
+        enable_discussion: Enable comments
+        passcode: Optional passcode (falls back to default)
+
+    Returns:
+        Full PrivateBin URL with encryption key in fragment
+    """
+    server_url = _get_server_url()
+    effective_passcode = passcode or _get_default_passcode()
+
+    formatter_map = {
+        "plaintext": Formatter.PLAIN_TEXT,
+        "syntaxhighlighting": Formatter.SYNTAX_HIGHLIGHTING,
+        "markdown": Formatter.MARKDOWN,
+    }
+    formatter_enum = formatter_map.get(format, Formatter.PLAIN_TEXT)
+
+    expiration_map = {
+        "5min": Expiration.FIVE_MINUTES,
+        "10min": Expiration.TEN_MINUTES,
+        "1hour": Expiration.ONE_HOUR,
+        "1day": Expiration.ONE_DAY,
+        "1week": Expiration.ONE_WEEK,
+        "1month": Expiration.ONE_MONTH,
+        "1year": Expiration.ONE_YEAR,
+        "never": Expiration.NEVER,
+    }
+    expiration_enum = expiration_map.get(expiration, Expiration.ONE_WEEK)
+
+    result = create(
+        text=content,
+        server=server_url,
+        password=effective_passcode if effective_passcode else None,
+        expiration=expiration_enum,
+        burn_after_reading=burn_after_reading,
+        open_discussion=enable_discussion,
+        formatter=formatter_enum,
+    )
+
+    return result.url
 
 
 @app.tool()
@@ -69,11 +132,11 @@ def create_encrypted_share_from_string(
     ] = None,
 ) -> str:
     """Create and post an encrypted paste from string content.
-    
+
     This tool encrypts content locally and posts it to PrivateBin. The server URL
     is configured via PRIVATEBIN_SERVER_URL environment variable and cannot be
     overridden by the agent (security feature to prevent data exfiltration).
-    
+
     Returns:
         Full PrivateBin URL with encryption key in fragment
     """
@@ -83,39 +146,16 @@ def create_encrypted_share_from_string(
     )
 
     try:
-        effective_passcode = passcode or PRIVATEBIN_DEFAULT_PASSCODE
-
-        formatter_map = {
-            "plaintext": Formatter.PLAIN_TEXT,
-            "syntaxhighlighting": Formatter.SYNTAX_HIGHLIGHTING,
-            "markdown": Formatter.MARKDOWN,
-        }
-        formatter_enum = formatter_map.get(format, Formatter.PLAIN_TEXT)
-
-        expiration_map = {
-            "5min": Expiration.FIVE_MINUTES,
-            "10min": Expiration.TEN_MINUTES,
-            "1hour": Expiration.ONE_HOUR,
-            "1day": Expiration.ONE_DAY,
-            "1week": Expiration.ONE_WEEK,
-            "1month": Expiration.ONE_MONTH,
-            "1year": Expiration.ONE_YEAR,
-            "never": Expiration.NEVER,
-        }
-        expiration_enum = expiration_map.get(expiration, Expiration.ONE_WEEK)
-
-        result = create(
-            text=content,
-            server=PRIVATEBIN_SERVER_URL,
-            password=effective_passcode if effective_passcode else None,
-            expiration=expiration_enum,
+        url = _create_paste_internal(
+            content=content,
+            format=format,
+            expiration=expiration,
             burn_after_reading=burn_after_reading,
-            open_discussion=enable_discussion,
-            formatter=formatter_enum,
+            enable_discussion=enable_discussion,
+            passcode=passcode,
         )
-
-        logger.info(f"Successfully created encrypted share: {result.url}")
-        return result.url
+        logger.info(f"Successfully created encrypted share: {url}")
+        return url
 
     except Exception as e:
         logger.error(f"Failed to create encrypted share: {e}")
@@ -153,10 +193,10 @@ def create_encrypted_share_from_file(
     ] = None,
 ) -> str:
     """Create and post an encrypted paste from file contents.
-    
+
     This tool reads a file, encrypts its contents locally, and posts it to PrivateBin.
     The server URL is configured via PRIVATEBIN_SERVER_URL environment variable.
-    
+
     Returns:
         Full PrivateBin URL with encryption key in fragment
     """
@@ -170,7 +210,7 @@ def create_encrypted_share_from_file(
         content = path.read_text(encoding="utf-8")
         logger.info(f"Read {len(content)} characters from {file_path}")
 
-        return create_encrypted_share_from_string(
+        url = _create_paste_internal(
             content=content,
             format=format,
             expiration=expiration,
@@ -178,6 +218,8 @@ def create_encrypted_share_from_file(
             enable_discussion=enable_discussion,
             passcode=passcode,
         )
+        logger.info(f"Successfully created encrypted share from file: {url}")
+        return url
 
     except Exception as e:
         logger.error(f"Failed to create encrypted share from file: {e}")
@@ -187,7 +229,9 @@ def create_encrypted_share_from_file(
 @app.tool()
 def save_decrypted_share_to_file(
     url: Annotated[str, Field(description="Full PrivateBin URL (with fragment)")],
-    output_path: Annotated[str, Field(description="Path where to save decrypted content")],
+    output_path: Annotated[
+        str, Field(description="Path where to save decrypted content")
+    ],
     passcode: Annotated[
         str | None,
         Field(
@@ -196,19 +240,19 @@ def save_decrypted_share_to_file(
     ] = None,
 ) -> str:
     """Retrieve and decrypt a PrivateBin share, saving it to a file.
-    
+
     This tool retrieves an encrypted paste from PrivateBin, decrypts it locally,
     and saves the content to a file. The decrypted content is NOT returned to the
     agent - it's only written to the file (security feature to keep sensitive data
     hidden from LLMs).
-    
+
     Returns:
         Success message with file path (does not include decrypted content)
     """
     logger.info(f"Retrieving and decrypting share from: {url}")
 
     try:
-        effective_passcode = passcode or PRIVATEBIN_DEFAULT_PASSCODE
+        effective_passcode = passcode or _get_default_passcode()
 
         paste = get(url, password=effective_passcode if effective_passcode else None)
 
@@ -226,9 +270,15 @@ def save_decrypted_share_to_file(
 
 def main() -> None:
     """Main entry point for the PrivateBin MCP server."""
+    try:
+        server_url = _get_server_url()
+    except RuntimeError as e:
+        print(f"Configuration error: {e}", file=sys.stderr)
+        sys.exit(1)
+
     print("=" * 60, flush=True, file=sys.stderr)
     print("Starting PrivateBin MCP server.", file=sys.stderr)
-    print(f"Server URL: {PRIVATEBIN_SERVER_URL}", file=sys.stderr)
+    print(f"Server URL: {server_url}", file=sys.stderr)
     print("=" * 60, flush=True, file=sys.stderr)
 
     try:

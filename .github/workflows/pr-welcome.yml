@@ -11,6 +11,7 @@ permissions:
 jobs:
   welcome:
     runs-on: ubuntu-latest
+    if: false  # Disabled until pr-welcome-message.md is created
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
